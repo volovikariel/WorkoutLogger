@@ -1,4 +1,4 @@
-const {app, Tray, BrowserWindow, ipcMain, Menu, shell, dialog, MenuItem, globalShortcut} = require('electron');
+const {app, Tray, BrowserWindow, ipcMain, Menu, shell, dialog, MenuItem, globalShortcut, webContents} = require('electron');
 const url = require('url');
 const path = require('path');
 const iconPath = path.join(__dirname, 'pic.jpg');
@@ -115,7 +115,10 @@ ipcMain.on('form-clicked', (event, args) => {
     let modalWindow = new BrowserWindow({
         minHeight: 300,
         minWidth: 600,
-        modal: true
+        modal: true,
+        webPreferences: {
+            nodeIntegration: true
+        }
     })
 
     modalWindow.on('ready-to-show', () => {
@@ -131,14 +134,10 @@ ipcMain.on('form-clicked', (event, args) => {
     }));
    
     modalWindow.webContents.on('did-finish-load', () => {
-        console.log('HELLO!');
         modalWindow.webContents.send('load-information', args);
     });
 });
 
-ipcMain.on('message', (event, args) => {
-    console.log(args);
-})
 
 
 //--------------------------------------------------------------

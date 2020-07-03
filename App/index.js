@@ -4,24 +4,8 @@ const BrowserWindow  = electron.remote.BrowserWindow;
 const url = require('url');
 const path = require('path');
 
-// Postgres Stuff
-const {Client} = require('pg');
-const inspector = require('inspector').url;
-const { fileURLToPath } = require('url');
-
-
-const client = new Client({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'Workout', 
-    password: 'postgresilikeanime',
-    port: 5432 
-});
-
-client.connect();
-
 // Event handlers from HTML let currTable = null;
-let currTable = 'null';
+let currTable = 'none';
 function exercisesClicked() {
     queryTable('exercise');
     currTable = 'exercise';
@@ -57,8 +41,10 @@ let queryTable = function(tableName) {
         table.setAttribute('id', `table-${tableName}`);
         table.appendChild(document.createElement('thead'));
         table.querySelector('thead').appendChild(document.createElement('tr'));
-
-        client.query(`SELECT * FROM ${tableName}`, (err, res) => {
+        
+        
+        //TODO: Send the table name and statement, get the result from Main process
+        db.query(`SELECT * FROM ${tableName}`, (err, res) => {
             // Setting up the COLUMNS
             for(let i = 0; i < Object.keys(res.rows[0]).length; i++) {
                 let heading = document.createElement('th');
@@ -120,3 +106,4 @@ function addButtonClicked() {
         document.getElementById('placeHolder').innerHTML += args;
     });
 }
+

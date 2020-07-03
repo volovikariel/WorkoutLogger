@@ -2,6 +2,9 @@ const electron = require('electron');
 const ipcRenderer = electron.ipcRenderer;
 
 ipcRenderer.on('load-information', (event, args) => {
-    document.getElementById('text-here').innerHTML = "AHHHHHHHH";
-    document.getElementById('form-here').innerHTML += 'Hello';
+    let form = document.getElementById('form');
+    let label = document.createElement('label');
+    label.innerHTML = 'Label:';
+    let input = document.createElement('input');
+    form.appendChild(label, input); 
 });

@@ -1,0 +1,23 @@
+{
+  "name": "workoutlogger",
+  "version": "1.0.0",
+  "description": "Workout Logger and predictor",
+  "main": "App/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/volovikariel/WorkoutLogger.git"
+  },
+  "author": "Ariel Volovik",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/volovikariel/WorkoutLogger/issues"
+  },
+  "homepage": "https://github.com/volovikariel/WorkoutLogger#readme",
+  "dependencies": {
+    "electron": "^9.0.5",
+    "pg": "^8.2.1"
+  }
+}

@@ -69,12 +69,8 @@ app.on('ready', function() {
 
 
 app.on('will-quit', function(){
-    db.end((err) => {
-        if(err) {
-            console.error('Error closing database', err.stack);
-        }
-    });
     globalShortcut.unregisterAll();
+    clientPool.end();
 });
 //-------------------------------------------------------------
 // IPC
@@ -127,23 +123,30 @@ const clientPool = new Pool({
   password: '1',
 })
 
-clientPool.connect((err, client, done) => {
+clientPool.connect((err, client, release) => {
     if(err) {
-        console.log(`Error while connecting ${err}`);
+        console.error(`Error while connecting ${err}`);
     }
 
     client.query('CREATE DATABASE workout', (err) => {
         if(err) {
-            console.log('Error creating workout');
+            console.error('Error creating workout');
         }
 
-        client.end();
-        clientPool.connect((err, clientOrg, done) => {
-            clientOrg.query('CREATE TABLE IF NOT EXISTS Testing');
+        clientPool.connect((err, clientOrg) => {
+            clientOrg.query('CREATE TABLE IF NOT EXISTS Testing', (err, result) => {
+
+                release();
+                
+                if(err) {
+                    return console.error('Error executing query', err.stack);
+                }
+                console.log('Result: ' + result);
+            });
+
             console.log('Client org query ran!');
         })
     })
-    done();
 })
 
 

@@ -150,6 +150,7 @@ ipcMain.on('form-clicked', (event, args) => {
 //};
 
 ipcMain.on('fetch-result', (event, args) => {
+    query
     const query = query(args, (result) => {
         console.log('got result: ' + JSON.stringify(result));
         win.webContents.send('got-query', result);
@@ -221,4 +222,4 @@ ipcMain.on('fetch-result', (event, args) => {
 //	
 //		1, 1, 1, now(), 1, 1, '{3,2,4}' WHERE NOT EXISTS (SELECT ALL * FROM Workout_History); 
 //`);
-//
+

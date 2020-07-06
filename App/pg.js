@@ -3,9 +3,14 @@ const exec = require('child_process').exec;
 // Use getos from npm for returning linux distros as well (apt-get vs pacman)
 
 exec(`
-     sudo apt-get update
-     sudo apt-get install postgresql postgresql-contrib
-     echo 'CREATE DATABASE TestingDatabase;' | psql -U postgres`
+     systemctl status postgresql
+     if [ "$?" -gt "0" ]; then 
+        sudo apt-get update
+        sudo apt-get install postgresql postgresql-contrib
+     else  
+        echo 'CREATE DATABASE TestingDatabase;' | psql -U postgres
+     fi
+    `
     , (err, stdout, stderr) => {
     console.log('stdout:' + stdout);
     console.error('stderr:',stderr);

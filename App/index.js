@@ -24,7 +24,7 @@ function historyClicked() {
 
 ipcRenderer.on('got-query', (event, args) => {
     queryTable(args.tableName, args.result);
-    currTable = args.tablename;
+    currTable = args.tableName;
     document.getElementById('placeHolder').innerHTML += 'got query';
 });
 
@@ -104,7 +104,7 @@ for(let i = 0; i < tableList.length; i++) {
 function addButtonClicked() {
     ipcRenderer.send('form-clicked', currTable);
 
-    ipcRenderer.on('popup-message', (event, args) => {
-        document.getElementById('placeHolder').innerHTML += args;
+    ipcRenderer.on('show-modalwindow', (event, args) => {
+        document.getElementById('placeHolder').innerHTML = `Table: ${args}`;
     });
 }

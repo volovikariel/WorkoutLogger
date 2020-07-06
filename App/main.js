@@ -77,7 +77,7 @@ app.on('will-quit', function(){
 // IPC
 ipcMain.on('form-clicked', (event, args) => {
 
-    win.webContents.send('popup-message', 'All clear!');
+    win.webContents.send('show-modalwindow', args);
    
     const modalWindow = new BrowserWindow({
         minHeight: 300,
@@ -100,14 +100,32 @@ ipcMain.on('form-clicked', (event, args) => {
         slashes: true
     }));
    
-    modalWindow.webContents.on('did-finish-load', (event, args) => {
+    modalWindow.webContents.on('did-finish-load', () => {
         modalWindow.webContents.send('load-information', args);
     });
+
+    // Shortcuts
+    const menu = new Menu();
+    menu.append(new MenuItem({
+        label: 'Submit',
+        accelerator: 'Enter',
+        click: () => {
+            modalWindow.webContents.send('get-modalwindow-info');
+        }
+    }))
+
+    modalWindow.setMenu(menu);
 });
 
 ipcMain.on('fetch-result', (event, args) => {
     query(`${args.query} ${args.tableName};`, (result) => {
-        console.log(`${args.query} ${args.tableName};`);
-        win.webContents.send('got-query', {tableName: args.tableName,result: JSON.stringify(result)});
+        win.webContents.send('got-query', {
+            tableName: args.tableName,
+            result: JSON.stringify(result)
+        });
     })
 })
+
+ipcMain.on('input-test', (event, args) => {
+    console.log(args);
+});

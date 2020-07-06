@@ -106,7 +106,8 @@ ipcMain.on('form-clicked', (event, args) => {
 });
 
 ipcMain.on('fetch-result', (event, args) => {
-    query(args, (result) => {
-        win.webContents.send('got-query', JSON.stringify(result));
+    query(`${args.query} ${args.tableName};`, (result) => {
+        console.log(`${args.query} ${args.tableName};`);
+        win.webContents.send('got-query', {tableName: args.tableName,result: JSON.stringify(result)});
     })
 })

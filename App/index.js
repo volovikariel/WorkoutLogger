@@ -4,35 +4,34 @@ const BrowserWindow  = electron.remote.BrowserWindow;
 const url = require('url');
 const path = require('path');
 
+let tableList = ['exercise', 'exercise_routine', 'workout_history'];
 // Event handlers from HTML let currTable = null;
 let currTable = 'none';
 
 function exercisesClicked() {
-    queryTable('exercise');
-    currTable = 'exercise';
+    ipcRenderer.send('fetch-result', {query: 'SELECT * FROM', tableName: tableList[0]});
 } 
 
 function routinesClicked() {
-    queryTable('exercise_routine');
-    currTable = 'exercise_routine';
+    ipcRenderer.send('fetch-result', {query: 'SELECT * FROM', tableName: tableList[1]});
 } 
 
 function historyClicked() {
-    queryTable('workout_history');
-    currTable = 'workout_history';
+    ipcRenderer.send('fetch-result', {query: 'SELECT * FROM', tableName: tableList[2]});
 } 
 
-let tableList = ['exercise', 'exercise_routine', 'workout_history'];
 
-var res;
+
 ipcRenderer.on('got-query', (event, args) => {
-    res = JSON.parse(args);
+    queryTable(args.tableName, args.result);
+    currTable = args.tablename;
     document.getElementById('placeHolder').innerHTML += 'got query';
 });
 
 // Select and display a table dynamically
-let queryTable = function(tableName) {
-    
+let queryTable = function(tableName, args) {
+    let res = JSON.parse(args); 
+
     if(currTable === tableName) // Do nothing if it's already the currently selected table.
         return;
     
@@ -49,10 +48,6 @@ let queryTable = function(tableName) {
         table.appendChild(document.createElement('thead'));
         table.querySelector('thead').appendChild(document.createElement('tr'));
         
-        // IPC MAGIC
-        ipcRenderer.send('fetch-result', `SELECT * FROM ${tableName};`);
-        
-        //---------
         for(let i = 0; i < Object.keys(res.rows[0]).length; i++) {
             let heading = document.createElement('th');
             heading.textContent = Object.keys(res.rows[0])[i];
@@ -113,4 +108,3 @@ function addButtonClicked() {
         document.getElementById('placeHolder').innerHTML += args;
     });
 }
-

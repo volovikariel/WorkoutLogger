@@ -1,4 +1,4 @@
-const {Pool, Client} = require('pg');
+const {Client} = require('pg');
 const exec = require('child_process').exec;
 // Use getos from npm for returning linux distros as well (apt-get vs pacman)
 
@@ -29,7 +29,7 @@ let showRes = false;
 const query = (query, callback) => {
     client.query(query, (err, res) => {
         if(err) {
-           console.error(`error ${res.command}:`, err.stack);
+           console.error(`error ${res}:`, err.stack); // Should be res.command
         } 
         if(showRes) {
             console.log(res);

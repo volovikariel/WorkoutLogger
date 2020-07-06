@@ -24,10 +24,9 @@ function historyClicked() {
 
 let tableList = ['exercise', 'exercise_routine', 'workout_history'];
 
-let res;
+var res;
 ipcRenderer.on('got-query', (event, args) => {
-    res = args;
-    alert(`Result: ${res}`);
+    res = JSON.parse(args);
     document.getElementById('placeHolder').innerHTML += 'got query';
 });
 

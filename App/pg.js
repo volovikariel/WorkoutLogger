@@ -8,7 +8,7 @@ exec(`
         sudo apt-get update
         sudo apt-get install postgresql postgresql-contrib
      else  
-        echo 'CREATE DATABASE TestingDatabase;' | psql -U postgres
+        echo 'CREATE DATABASE TestingDatabase;' | PGPASSWORD=1 psql -U postgres
      fi
     `
     , (err, stdout, stderr) => {

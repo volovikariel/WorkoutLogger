@@ -115,6 +115,25 @@ ipcMain.on('form-clicked', (event, args) => {
     }))
 
     modalWindow.setMenu(menu);
+
+    ipcMain.on('input-test', (event, args) => {
+        query(`SELECT * FROM exercise WHERE exercise_name = '${args}'`, (res) => {
+            if(res.rows.length != 0) {
+                modalWindow.webContents.send('duplicate');
+            }
+            else {
+                query(`INSERT INTO exercise (exercise_name) VALUES (${args})`);
+                console.log('Inserted into exercise_name');
+            }
+        });
+        console.log('Args from input-test: ' + args);
+    });
+
+    ipcMain.on('get-info', (event, args) => {
+        query(`SELECT ${args.param} FROM ${args.tableName};`, (result) => {
+            modalWindow.webContents.send('info', {result: JSON.stringify(result)});
+        });
+    });
 });
 
 ipcMain.on('fetch-result', (event, args) => {
@@ -126,6 +145,4 @@ ipcMain.on('fetch-result', (event, args) => {
     })
 })
 
-ipcMain.on('input-test', (event, args) => {
-    console.log(args);
-});
+ipcMain.on('log', (args) => {console.log(args);});

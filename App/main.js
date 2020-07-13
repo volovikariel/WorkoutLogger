@@ -115,6 +115,9 @@ ipcMain.on('form-clicked', (event, args) => {
     }))
 
     modalWindow.setMenu(menu);
+    ipcMain.on('send-message', (args) => {
+       modalWindow.webContents.send('the-message', args);     
+    });
 
     ipcMain.on('input-test', (event, args) => {
         query(`SELECT * FROM exercise WHERE exercise_name = '${args}'`, (res) => {
@@ -131,7 +134,7 @@ ipcMain.on('form-clicked', (event, args) => {
 
     ipcMain.on('get-info', (event, args) => {
         query(`SELECT ${args.param} FROM ${args.tableName};`, (result) => {
-            modalWindow.webContents.send('info', {result: JSON.stringify(result)});
+            modalWindow.webContents.send('send-info', {result: JSON.stringify(result)});
         });
     });
 });

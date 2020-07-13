@@ -1,8 +1,5 @@
 const electron = require('electron');
 const ipcRenderer = electron.ipcRenderer;
-const BrowserWindow  = electron.remote.BrowserWindow;
-const url = require('url');
-const path = require('path');
 
 let tableList = ['exercise', 'exercise_routine', 'workout_history'];
 // Event handlers from HTML let currTable = null;
@@ -23,14 +20,14 @@ function historyClicked() {
 
 
 ipcRenderer.on('got-query', (event, args) => {
-    queryTable(args.tableName, args.result);
+    queryTable(args.tableName, JSON.parse(args.result));
     currTable = args.tableName;
     document.getElementById('placeHolder').innerHTML += 'got query';
 });
 
 // Select and display a table dynamically
 let queryTable = function(tableName, args) {
-    let res = JSON.parse(args); 
+    let res = args; 
 
     if(currTable === tableName) // Do nothing if it's already the currently selected table.
         return;

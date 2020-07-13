@@ -37,14 +37,15 @@ ipcRenderer.on('load-information', (event, args) => {
        
         ipcRenderer.send('get-info', {tableName: 'exercise', param:'exercise_name'});
         
-        ipcRenderer.on('info', (args) => {
+        ipcRenderer.on('send-info', (args) => {
             let res = JSON.parse(args.result);
-            for(let i = 0; i < res.rows.length; i++) {
-                dropDown.add(JSON.stringify(res.rows[i]));
-                ipcRenderer.send('log', `Res rows i: ${JSON.stringify(res.rows)}`);
-            }
+            ipcRenderer.send('send-message', res);
+           // for(let i = 0; i < res.rows.length; i++) {
+           //     dropDown.add(JSON.stringify(res.rows[i]));
+           //     ipcRenderer.send('log', `Res rows i: ${JSON.stringify(res.rows)}`);
+           // }
 
-            form.appendChild(dropDown);
+           // form.appendChild(dropDown);
         });
     }
     else if(args == 'exercise_routine') {
@@ -62,3 +63,6 @@ ipcRenderer.on('duplicate', () => {
     document.getElementById('title').innerHTML = 'Duplicate Found'
 });
 
+ipcRenderer.on('the-message', (args) => {
+    document.getElementById('title').innerHTML = args;
+});

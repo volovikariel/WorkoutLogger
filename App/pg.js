@@ -34,7 +34,8 @@ let showRes = false;
 const query = (query, callback) => {
     client.query(query, (err, res) => {
         if(err) {
-           console.error(`Query Error: `, err.stack); // Should be res.command
+           //console.error(`Querry error for ${JSON.stringify(res.command)}`, err.stack); 
+            console.error(`Query (${query}) Error`, err.stack);
         } 
         if(showRes) {
             console.log(res);

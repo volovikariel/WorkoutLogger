@@ -120,13 +120,12 @@ ipcMain.on('form-clicked', (event, args) => {
     });
 
     ipcMain.on('input-test', (event, args) => {
-        query(`SELECT * FROM exercise WHERE exercise_name = '${args}'`, (res) => {
-            if(res.rows.length != 0) {
+        query(`SELECT * FROM exercise WHERE exercise_name = '${args}'`, (result) => {
+            if(result.rows.length != 0) {
                 modalWindow.webContents.send('duplicate');
             }
             else {
-                query(`INSERT INTO exercise (exercise_name) VALUES (${args})`);
-                console.log('Inserted into exercise_name');
+                query(`INSERT INTO exercise(exercise_name) VALUES ('${args}')`, (result) => {});
             }
         });
         console.log('Args from input-test: ' + args);
@@ -134,12 +133,14 @@ ipcMain.on('form-clicked', (event, args) => {
 
     ipcMain.on('get-info', (event, args) => {
         query(`SELECT ${args.param} FROM ${args.tableName};`, (result) => {
+            console.log('sending info');
             modalWindow.webContents.send('send-info', {result: JSON.stringify(result)});
         });
     });
 });
 
 ipcMain.on('fetch-result', (event, args) => {
+    console.log(`In fetch-result, query is: ${args.query} ${args.tableName}`);
     query(`${args.query} ${args.tableName};`, (result) => {
         win.webContents.send('got-query', {
             tableName: args.tableName,
@@ -148,4 +149,4 @@ ipcMain.on('fetch-result', (event, args) => {
     })
 })
 
-ipcMain.on('log', (args) => {console.log(args);});
+ipcMain.on('log', (args) => {console.log(args)});

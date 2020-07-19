@@ -1,7 +1,6 @@
-const {app, BrowserWindow, ipcMain, Menu, MenuItem, globalShortcut, webContents} = require('electron');
+const {app, BrowserWindow, ipcMain, Menu, MenuItem, globalShortcut} = require('electron');
 const url = require('url');
 const path = require('path');
-const iconPath = path.join(__dirname, 'pic.jpg');
 const {query} = require('./pg.js');
 
 let win; 
@@ -85,14 +84,17 @@ ipcMain.on('form-clicked', (event, args) => {
         modal: true,
         webPreferences: {
             nodeIntegration: true
-        }
+        },
+        title: args
     })
+    
+    modalWindow.webContents.on('did-finish-load', () => {
+        modalWindow.webContents.send('create-form', args);
+    });
 
     modalWindow.on('ready-to-show', () => {
         modalWindow.show();
     })
-
-    modalWindow.setTitle(args);
 
     modalWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'modal.html'),
@@ -100,10 +102,6 @@ ipcMain.on('form-clicked', (event, args) => {
         slashes: true
     }));
    
-    modalWindow.webContents.on('did-finish-load', () => {
-        modalWindow.webContents.send('load-information', args);
-    });
-
     // Shortcuts
     const menu = new Menu();
     menu.append(new MenuItem({
@@ -115,38 +113,35 @@ ipcMain.on('form-clicked', (event, args) => {
     }))
 
     modalWindow.setMenu(menu);
-    ipcMain.on('send-message', (args) => {
-       modalWindow.webContents.send('the-message', args);     
-    });
 
-    ipcMain.on('input-test', (event, args) => {
-        query(`SELECT * FROM exercise WHERE exercise_name = '${args}'`, (result) => {
+    ipcMain.on('input', (event, args) => {
+        query(`SELECT * FROM exercise WHERE exercise_name = '${args}';`, (result) => {
             if(result.rows.length != 0) {
-                modalWindow.webContents.send('duplicate');
+                console.log('Duplicate value found, not inserting.');
             }
             else {
                 query(`INSERT INTO exercise(exercise_name) VALUES ('${args}')`, (result) => {});
             }
         });
-        console.log('Args from input-test: ' + args);
     });
 
     ipcMain.on('get-info', (event, args) => {
         query(`SELECT ${args.param} FROM ${args.tableName};`, (result) => {
-            console.log('sending info');
             modalWindow.webContents.send('send-info', {result: JSON.stringify(result)});
         });
     });
 });
 
-ipcMain.on('fetch-result', (event, args) => {
-    console.log(`In fetch-result, query is: ${args.query} ${args.tableName}`);
+ipcMain.on('request-table', (event, args) => {
+    console.log(`In request-table, query is: ${args.query} ${args.tableName}`);
     query(`${args.query} ${args.tableName};`, (result) => {
-        win.webContents.send('got-query', {
+        win.webContents.send('load-table', {
             tableName: args.tableName,
             result: JSON.stringify(result)
         });
     })
-})
 
-ipcMain.on('log', (args) => {console.log(args)});
+    win.on('closed', () => {
+        modalWindow = null;
+    })
+})

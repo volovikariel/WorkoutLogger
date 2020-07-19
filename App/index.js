@@ -1,28 +1,24 @@
-const electron = require('electron');
-const ipcRenderer = electron.ipcRenderer;
+const ipcRenderer = require('electron').ipcRenderer;
 
 let tableList = ['exercise', 'exercise_routine', 'workout_history'];
 // Event handlers from HTML let currTable = null;
 let currTable = 'none';
 
 function exercisesClicked() {
-    ipcRenderer.send('fetch-result', {query: 'SELECT * FROM', tableName: tableList[0]});
+    ipcRenderer.send('request-table', {query: 'SELECT * FROM', tableName: tableList[0]});
 } 
 
 function routinesClicked() {
-    ipcRenderer.send('fetch-result', {query: 'SELECT * FROM', tableName: tableList[1]});
+    ipcRenderer.send('request-table', {query: 'SELECT * FROM', tableName: tableList[1]});
 } 
 
 function historyClicked() {
-    ipcRenderer.send('fetch-result', {query: 'SELECT * FROM', tableName: tableList[2]});
+    ipcRenderer.send('request-table', {query: 'SELECT * FROM', tableName: tableList[2]});
 } 
 
-
-
-ipcRenderer.on('got-query', (event, args) => {
+ipcRenderer.on('load-table', (event, args) => {
     queryTable(args.tableName, JSON.parse(args.result));
     currTable = args.tableName;
-    document.getElementById('placeHolder').innerHTML += 'got query';
 });
 
 // Select and display a table dynamically

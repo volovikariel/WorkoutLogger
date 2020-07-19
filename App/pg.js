@@ -34,7 +34,6 @@ let showRes = false;
 const query = (query, callback) => {
     client.query(query, (err, res) => {
         if(err) {
-           //console.error(`Querry error for ${JSON.stringify(res.command)}`, err.stack); 
             console.error(`Query (${query}) Error`, err.stack);
         } 
         if(showRes) {
@@ -45,6 +44,8 @@ const query = (query, callback) => {
 };
 
 exports.query = query;
+
+// Default Tables
 
 //query(`CREATE table IF NOT EXISTS Person
 //    (

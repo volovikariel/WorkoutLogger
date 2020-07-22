@@ -4,9 +4,10 @@ const path = require('path');
 const {query} = require('./pg.js');
 
 let win; 
+let modalWin;
 
+// Create window and pass in the main window html, index.html which references index.js
 function createWindow() {
-    
     win = new BrowserWindow({
             minHeight: 600, 
             minWidth: 800, 
@@ -33,7 +34,6 @@ function createWindow() {
 
 // App Stuff---------------------------------------------------------------------------------------------
 app.on('ready', function() {
-    
     //TODO: Check if database works, if so, createwindow
 
     createWindow();
@@ -67,36 +67,40 @@ app.on('ready', function() {
     });
 });
 
-
 app.on('will-quit', function(){
     globalShortcut.unregisterAll();
     client.end();
 });
 //-------------------------------------------------------------
 // IPC
+// Everything to do with communication from main.js (the main process)
 ipcMain.on('form-clicked', (event, args) => {
-
-    win.webContents.send('show-modalwindow', args);
+    // Setting an element of the window (placeHolder text) to be the
+    // "section's" name (exercise, workout_routine, or whatever else)
+    win.webContents.send('set-placeholder', args);
    
-    const modalWindow = new BrowserWindow({
+    const modalWin = new BrowserWindow({
         minHeight: 300,
         minWidth: 600,
         modal: true,
         webPreferences: {
             nodeIntegration: true
         },
-        title: args
+        title: args,
     })
-    
-    modalWindow.webContents.on('did-finish-load', () => {
-        modalWindow.webContents.send('create-form', args);
+
+    modalWin.webContents.toggleDevTools(); 
+
+    // Send a message to modal.js to populate its html 
+    modalWin.webContents.on('did-finish-load', () => {
+        modalWin.webContents.send('create-form', args);
     });
 
-    modalWindow.on('ready-to-show', () => {
-        modalWindow.show();
+    modalWin.on('ready-to-show', () => {
+        modalWin.show();
     })
 
-    modalWindow.loadURL(url.format({
+    modalWin.loadURL(url.format({
         pathname: path.join(__dirname, 'modal.html'),
         protocol: 'file',
         slashes: true
@@ -108,29 +112,32 @@ ipcMain.on('form-clicked', (event, args) => {
         label: 'Submit',
         accelerator: 'Enter',
         click: () => {
-            modalWindow.webContents.send('get-modalwindow-info');
+            modalWin.webContents.send('get-modalwindow-info');
         }
     }))
 
-    modalWindow.setMenu(menu);
-
-    ipcMain.on('input', (event, args) => {
-        query(`SELECT * FROM exercise WHERE exercise_name = '${args}';`, (result) => {
-            if(result.rows.length != 0) {
-                console.log('Duplicate value found, not inserting.');
-            }
-            else {
-                query(`INSERT INTO exercise(exercise_name) VALUES ('${args}')`, (result) => {});
-            }
-        });
-    });
+    modalWin.setMenu(menu);
 
     ipcMain.on('get-info', (event, args) => {
-        query(`SELECT ${args.param} FROM ${args.tableName};`, (result) => {
-            modalWindow.webContents.send('send-info', {result: JSON.stringify(result)});
-        });
+        if(args.tableName == 'exercise') { 
+            query(`SELECT exercise_type_name FROM exercise_types;`, (result) => {
+                modalWin.webContents.send('send-info', {table: args.tableName, res: JSON.stringify(result)});
+            });
+        }
     });
 });
+
+ipcMain.on('input', (event, args) => {
+    query(`SELECT * FROM exercise WHERE exercise_name = '${args}';`, (result) => {
+        if(result.rows.length != 0) {
+            console.log('Duplicate value found, not inserting.');
+        }
+        else {
+            query(`INSERT INTO exercise(exercise_name) VALUES ('${args}')`, (result) => {});
+        }
+    });
+});
+
 
 ipcMain.on('request-table', (event, args) => {
     console.log(`In request-table, query is: ${args.query} ${args.tableName}`);

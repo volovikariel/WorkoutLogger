@@ -64,7 +64,6 @@ let queryTable = function(tableName, args) {
 
         for(let col = 0; col < Object.keys(res.rows[0]).length; col++) {
             let cells = document.querySelectorAll(`.${tableName}-${Object.keys(res.rows[0])[col]}`); 
-            console.log(`cell length is: ${cells.length}`);
             for(let row = 0; row < cells.length; row++) {
                 cells[row].addEventListener('click', function() {                   
                     console.log(
@@ -97,7 +96,7 @@ for(let i = 0; i < tableList.length; i++) {
 function addButtonClicked() {
     ipcRenderer.send('form-clicked', currTable);
 
-    ipcRenderer.on('show-modalwindow', (event, args) => {
+    ipcRenderer.on('set-placeholder', (event, args) => {
         document.getElementById('placeHolder').innerHTML = `Table: ${args}`;
     });
 }

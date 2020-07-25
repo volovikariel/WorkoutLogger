@@ -4,10 +4,12 @@ const path = require('path');
 const {query} = require('./pg.js');
 
 let win; 
-let modalWin;
 
-// Create window and pass in the main window html, index.html which references index.js
-function createWindow() {
+// App Stuff---------------------------------------------------------------------------------------------
+app.on('ready', function() {
+    //TODO: Check if database works, if so, createwindow
+
+    // Create window and pass in the main window html, index.html which references index.js
     win = new BrowserWindow({
             minHeight: 600, 
             minWidth: 800, 
@@ -30,13 +32,6 @@ function createWindow() {
     win.on('closed', () => {
         win = null;
     })
-}
-
-// App Stuff---------------------------------------------------------------------------------------------
-app.on('ready', function() {
-    //TODO: Check if database works, if so, createwindow
-
-    createWindow();
 
     const template = [
         {
@@ -44,7 +39,7 @@ app.on('ready', function() {
             submenu: [
                 {
                     label: 'Quit',
-                    click: function() {
+                    click: () => {
                         app.quit();
                     },
                     accelerator: 'ESC'
@@ -107,14 +102,25 @@ ipcMain.on('form-clicked', (event, args) => {
     }));
    
     // Shortcuts
-    const menu = new Menu();
-    menu.append(new MenuItem({
-        label: 'Submit',
-        accelerator: 'Enter',
-        click: () => {
-            modalWin.webContents.send('get-modalwindow-info');
+    const template = [
+        {
+            label: 'Submit',
+            accelerator: 'Enter',
+            click: () => {
+                console.log('Enter pressed!!!');
+                modalWin.webContents.send('get-modalwindow-info');
+            }
+        },
+        {
+            label: 'Quit',
+            accelerator: 'Esc',
+            click: () => {
+                modalWin.close();
+            }
         }
-    }))
+    ]
+
+    const menu = Menu.buildFromTemplate(template);
 
     modalWin.setMenu(menu);
 
@@ -128,14 +134,44 @@ ipcMain.on('form-clicked', (event, args) => {
 });
 
 ipcMain.on('input', (event, args) => {
-    query(`SELECT * FROM exercise WHERE exercise_name = '${args}';`, (result) => {
-        if(result.rows.length != 0) {
-            console.log('Duplicate value found, not inserting.');
-        }
-        else {
-            query(`INSERT INTO exercise(exercise_name) VALUES ('${args}')`, (result) => {});
-        }
-    });
+    if(args.tableName == 'exercise') {
+        query(`SELECT * FROM exercise WHERE exercise_name = $1::text;`, (result) => {
+            console.log(`Stringified args: ${JSON.stringify(args)}`);
+            if(result.rows.length != 0) {
+                console.log('Duplicate value found, not inserting.');
+            }
+            else {
+                query(`INSERT INTO ${args.tableName}(exercise_name, exercise_type_ID) VALUES ('${args.exercise_name}', (SELECT exercise_type_id FROM exercise_types WHERE exercise_type_name = '${args.exercise_type_name}'));`, (result) => {
+                    // Update the table preview given that there's a possibility that something was inserted.
+                    query(`SELECT * FROM ${args.tableName};`, (result) => {
+                        win.webContents.send('load-table', {
+                            tableName: args.tableName,
+                            result: JSON.stringify(result)
+                        });
+                    })
+                });
+            }
+        }, [args.exercise_name]);
+    }
+    else if(args.tableName == 'exercise_types') {
+        query(`SELECT * FROM ${args.tableName} WHERE exercise_type_name = $1::text;`, (result) => {
+            if(result.rows.length != 0) {
+                console.log('Duplicate value found, not inserting.');
+            }
+            else {
+                query(`INSERT INTO ${args.tableName} (exercise_type_name) VALUES ($1::text);`, (result) => {
+                    // Update the table preview given that there's a possibility that something was inserted.
+                    query(`SELECT * FROM ${args.tableName};`, (result) => {
+                        win.webContents.send('load-table', {
+                            tableName: args.tableName,
+                            result: JSON.stringify(result)
+                        });
+                    })
+                }
+                    , [args.exercise_type_name]);
+            }
+        }, [args.value]);
+    }
 });
 
 

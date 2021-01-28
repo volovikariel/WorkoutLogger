@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/volovikariel/WorkoutLogger#readme",
   "dependencies": {
-    "electron": "^9.0.5",
+    "electron": "^9.4.0",
     "eslint": "^7.4.0",
     "pg": "^8.2.1"
   }
